@@ -1,8 +1,10 @@
-Spendy
+[Spendy](http://gdotdesign.github.io/spendy/)
 ======
 Spendy is an web / mobile application for tracking expenses. It is created as an example app for DRY.
 
-It is uses Firebase to store data and Persona to authenticate.
+It is uses Firebase to store data and Persona to authenticate, and it is PhoneGap ready.
+
+Spendy is hosted at github: [http://gdotdesign.github.io/spendy/](http://gdotdesign.github.io/spendy/)
 
 Dependencies
 ============
