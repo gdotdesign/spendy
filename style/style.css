@@ -217,6 +217,7 @@
 
   /* INPUT */
   input {
+    text-align: left;
     -webkit-appearance: none;
     border-radius: 0;
     border: none;
