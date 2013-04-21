@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<widget xmlns     = "http://www.w3.org/ns/widgets"
+        xmlns:gap = "http://phonegap.com/ns/1.0"
+        id        = "com.phonegap.spendy"
+        version   = "1.0.0">
+
+    <name>Spendy</name>
+
+    <description>
+        Track your expenses!
+    </description>
+
+    <author href="http://gdotdesign.heroku.com" email="guszti5@hotmail.com">
+        Szikszai Gusztáv
+    </author>
+
+    <feature name="http://api.phonegap.com/1.0/device" />
+
+    <preference name="permissions"                value="none"/>
+
+    <preference name="phonegap-version"           value="2.3.0" />
+    <preference name="orientation"                value="portrait" />
+    <preference name="target-device"              value="universal" />
+    <preference name="fullscreen"                 value="true" />
+    <preference name="webviewbounce"              value="false" />
+    <preference name="stay-in-webview"            value="false" />
+    <preference name="exit-on-suspend"            value="false" />
+    <preference name="auto-hide-splash-screen"    value="true" />
+
+
+    <icon src="images/icon.png" />
+
+    <access origin="http://127.0.0.1*"/>
+
+</widget>
