@@ -1,0 +1,19 @@
+{
+    "name": "Spendy",
+    "version": "0.1.0",
+    "author": "",
+    "description": "",
+    "contributors": [],
+    "main": "",
+    "repository": {
+        "type": "git",
+        "url": "https://bitbucket.org/gdotdesign/spendy"
+    },
+    "dependencies": {
+        "autoprefixer": "*"
+    },
+    "license": "MIT",
+    "engines": {
+        "node": ">=0.8"
+    }
+}

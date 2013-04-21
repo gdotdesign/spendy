@@ -1,0 +1,265 @@
+proto = Element.prototype
+proto.qs = proto.querySelector
+
+proto = Number.prototype
+def toCurrency
+  regexp = new RegExp("(\\d)(?=(\\d{3})+\\b)","g")
+  (@toFixed(0)).replace(regexp,'$1 ')
+proto.toCurrency = toCurrency
+
+
+class FireBaseInput
+  set value(value)
+    if @type is 'number'
+      @input.value = parseInt(value)
+    else
+      @input.value = value
+
+  get value
+    if @type is 'number'
+      parseInt(@input.value)
+    else
+      @input.value
+
+  def constructor(@input,@ref, @type)
+    if @type is 'number'
+      @input::keypress!
+        charCode = evt.which ? evt.which : event.keyCode
+        if (charCode > 31 and (charCode < 48 or charCode > 57))
+          event.preventDefault!
+    @input::change!
+      @ref.set(@value)
+
+class Item
+  set price(value)
+    @priceInput.value = value
+  set name(value)
+    @nameInput.value = value
+
+  get price
+    @priceInput.value
+
+  def constructor(@ref, data)
+    @base = render item
+
+    @nameInput = new FireBaseInput( @base.qs('[name=name]'), @ref.child('name') )
+    @priceInput = new FireBaseInput( @base.qs('[name=price]'), @ref.child('price'), 'number' )
+    icon = @base.qs('i')
+    icon::click!
+      @ref.set(null)
+    icon::touchend!
+      @ref.set(null)
+
+
+    @ref.on('value', @update.bind(self))
+
+    self &= data
+
+  def update(snapshot)
+    self &= snapshot.val()
+
+template item
+  %li
+    %input&name
+    %input&price%number
+    %i.icon-remove
+
+template layout
+  %article
+    %section#landing.hide.hidden
+      %.center
+        %img[src=images/icon.png][width=100px]
+        %h1 "Spendy"
+        %a.persona-button#persona
+          %i.icon-user
+          %span "Sign in with Persona!"
+        %a.persona-button#try "Try!"
+    %section#app.hidden
+      %header
+        %.brand
+          %img[src=images/icon.png][width=26px]
+          %h2 "Spendy"
+        %form
+          %input&name[placeholder=Name]
+          %input&price%number[placeholder=Price]
+          %i.icon-signout
+          %i.icon-plus
+      %.loading
+        %.icon-spinner.icon-spin
+      %#scroller
+        %ul
+      %footer
+        %span "Total Spending:"
+        %strong
+
+ios = false
+
+if window.device
+  document::deviceready
+    load()
+else
+  window::load
+    load()
+
+def load
+  body = document.body
+  body << render layout
+
+  if (new RegExp("iPhone|iPod|iPad","i")).test(navigator.userAgent)
+    ios = true
+    body *+ "ios"
+
+  form = body.qs("form")
+  IScroll = iScroll
+
+  def before(event)
+    target = event.target
+    if target.tagName isnt "INPUT"
+      event.preventDefault()
+
+  myScroll = new IScroll('scroller',{onBeforeScrollStart: before})
+
+  document.addEventListener('touchmove') (event) & event.preventDefault!
+
+
+  connectedRef = new Firebase('https://intest.firebaseio.com/.info/connected')
+  connectedRef.on('value') (snap) &
+    if snap.val() is true
+      log 'connected'
+    else
+      log 'not connected'
+
+  |.persona-button#persona|::touchend
+    auth.login('persona')
+
+  |.persona-button#persona|::click
+    auth.login('persona')
+
+  |.persona-button#try|::touchend
+    init("try")
+
+  |.persona-button#try|::click
+    init("try")
+
+  |body|::touchend
+    focused = body.qs('*:focus')
+    if focused
+      focused.blur()
+
+  |form [name=price]|::keypress!
+    charCode = evt.which ? evt.which : event.keyCode
+    if (charCode > 31 and (charCode < 48 or charCode > 57))
+      event.preventDefault!
+    if charCode is 13
+      add!
+  |i.icon-plus|::click
+    add!
+  |i.icon-plus|::touchstart
+    add!
+
+
+  |i.icon-signout|::click
+    auth.logout()
+    ref.off('value', onValue)
+    ref.off('child_removed', childRemoved)
+    ref.off('child_added', childAdded)
+    after 1s
+      items &&
+        delete items[self.key]
+        dispose (self.value).base
+
+  |i.icon-signout|::touchstart
+    auth.logout()
+    ref.off('value', onValue)
+    ref.off('child_removed', childRemoved)
+    ref.off('child_added', childAdded)
+    after 1s
+      items &&
+        delete items[self.key]
+        dispose (self.value).base
+
+
+  baseRef = new Firebase("https://spendy.firebaseio.com/")
+
+  def handleAuth(err,user)
+    |#app, #landing| *- 'hidden'
+    if err
+      log err
+    else
+      if user
+        init(user.id)
+      else
+        |#landing| *- 'hide'
+        |#app| *+ 'hide'
+
+  window.auth = new FirebaseAuthClient(baseRef,handleAuth)
+
+  def remove(el)
+    el *+ 'remove'
+    el::webkitAnimationEnd
+      dispose el
+      overAllSpending!
+    el::animationend
+      dispose el
+      overAllSpending!
+
+  def add
+    (ref.child(Date.now())).set({
+      name: name.value,
+      price: parseInt(price.value)
+    })
+    price.value = ''
+    name.value = ''
+
+  items = {}
+  ref = null
+  loading = body.qs('.loading')
+  ul = body.qs('ul')
+
+  name = form.qs('[name=name]')
+  price = form.qs('[name=price]')
+
+  def overAllSpending
+    spending = 0
+    items &&
+      value = self.value
+      spending += value.price
+    |strong|.textContent = spending.toCurrency()
+    children = ul.childNodes
+    if children.length > 0
+      ul *- 'empty'
+    else
+      ul *+ 'empty'
+
+  def onValue
+    loading *+ 'hide'
+    overAllSpending!
+
+  def childAdded(snap)
+    log "Child added"
+    item = new Item(snap.ref(), snap.val())
+    items[snap.name()] = item
+    ul << item.base
+    myScroll.refresh()
+    overAllSpending!
+
+  def childRemoved(snap)
+    item = items[snap.name()]
+    remove(item.base)
+    delete items[snap.name()]
+    myScroll.refresh()
+
+  def init(id)
+    price.value = ''
+    name.value = ''
+
+    loading *- 'hide'
+    |#landing| *+ 'hide'
+    |#app| *- 'hide'
+
+
+    after 1s
+      ref = baseRef.child(id)
+      ref.on('child_removed', childRemoved)
+      ref.on('child_added', childAdded)
+      ref.on('value', onValue)
