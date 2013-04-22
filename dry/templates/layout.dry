@@ -1,0 +1,27 @@
+template layout
+  %article
+    %section#landing.hide.hidden
+      %.center
+        %img[src=images/icon.png][width=100px]
+        %h1 "Spendy"
+        %a.persona-button#persona
+          %i.icon-user
+          %span "Sign in with Persona!"
+        %a.persona-button#try "Try!"
+    %section#app.hidden
+      %header
+        %.brand
+          %img[src=images/icon.png][width=26px]
+          %h2 "Spendy"
+        %form
+          %input&name[placeholder=Name]
+          %input&price%number[placeholder=Price]
+          %i.icon-signout
+          %i.icon-plus
+      %.loading
+        %.icon-spinner.icon-spin
+      %#scroller
+        %ul
+      %footer
+        %span "Total Spending:"
+        %strong

@@ -1,0 +1,98 @@
+class Spendy
+  def constructor(body, @baseRef, @auth)
+    @items = {}
+
+    @loading = body.qs('.loading')
+    @ul      = body.qs('ul')
+
+    form    = body.qs("form")
+    @name    = form.qs('[name=name]')
+    @price   = form.qs('[name=price]')
+
+    def before(event)
+      target = event.target
+      if target.tagName isnt "INPUT"
+        event.preventDefault()
+
+    @iScroll = new IScroll('scroller',{onBeforeScrollStart: before})
+
+    @onValue = @onValue.bind(self)
+    @onChildRemoved = @onChildRemoved.bind(self)
+    @onChildAdded = @onChildAdded.bind(self)
+
+    numberInput(@price)
+
+  def remove(el)
+    el *+ 'remove'
+    el::webkitAnimationEnd!
+      dispose el
+      @overAllSpending!
+    el::animationend!
+      dispose el
+      @overAllSpending!
+
+  def add
+    obj = {
+      name: @name.value,
+      price: parseInt(@price.value)
+    }
+
+    ref = @ref.child(Date.now())
+    ref.set(obj)
+
+    @price.value = ''
+    @name.value = ''
+
+  def logout
+    @auth.logout()
+    @ref.off('value', @onValue)
+    @ref.off('child_removed', @onChildRemoved)
+    @ref.off('child_added', @onChildAdded)
+
+    after 1s
+      items = @items
+      @items &&
+        delete items[@key]
+        dispose @value.base
+
+  def overAllSpending
+    spending = 0
+    @items &&
+      spending += @value.price
+    |strong|.textContent = spending.toCurrency()
+    children = @ul.childNodes
+    if children.length > 0
+      @ul *- 'empty'
+    else
+      @ul *+ 'empty'
+
+  def onValue
+    @loading *+ 'hide'
+    @overAllSpending!
+
+  def onChildAdded(snap)
+    item = new Item(snap.ref(), snap.val())
+    @items[snap.name()] = item
+    @ul << item.base
+    @iScroll.refresh()
+    @overAllSpending!
+
+  def onChildRemoved(snap)
+    item = @items[snap.name()]
+    @remove(item.base)
+    delete @items[snap.name()]
+    @iScroll.refresh()
+
+  def init(id)
+    @price.value = ''
+    @name.value = ''
+
+    @loading *- 'hide'
+    |#landing| *+ 'hide'
+    |#app| *- 'hide'
+
+    after 1s
+      @ref = @baseRef.child(id)
+      @ref.on('child_removed', @onChildRemoved)
+      @ref.on('child_added', @onChildAdded)
+      @ref.on('value', @onValue)

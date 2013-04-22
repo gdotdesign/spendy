@@ -1,0 +1,15 @@
+proto = Element.prototype
+proto.qs = proto.querySelector
+
+proto = Number.prototype
+def toCurrency
+  regexp = new RegExp("(\\d)(?=(\\d{3})+\\b)","g")
+  (@toFixed(0)).replace(regexp,'$1 ')
+proto.toCurrency = toCurrency
+
+
+def numberInput(el)
+  el::keypress!
+    charCode = event.which ? event.which : event.keyCode
+    if (charCode > 31 and (charCode < 48 or charCode > 57))
+      event.preventDefault!

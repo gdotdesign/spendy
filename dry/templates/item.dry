@@ -1,0 +1,5 @@
+template item
+  %li
+    %input&name
+    %input&price%number
+    %i.icon-remove

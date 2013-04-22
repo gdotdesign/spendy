@@ -1,0 +1,21 @@
+class Input
+  set value(value)
+    @input.value = value
+
+  get value
+    @input.value
+
+  def constructor(@input,@ref)
+    @input::change!
+      @ref.set(@value)
+
+class NumberInput extends Input
+  set value(value)
+    @input.value = parseInt(value)
+
+  get value
+    parseInt(@input.value)
+
+  def constructor
+    super
+    numberInput(@input)

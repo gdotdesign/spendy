@@ -1,0 +1,27 @@
+class Item
+  set price(value)
+    @priceInput.value = value
+  set name(value)
+    @nameInput.value = value
+
+  get price
+    @priceInput.value
+
+  def constructor(@ref, data)
+    @base = render item
+
+    @nameInput = new Input( @base.qs('[name=name]'), @ref.child('name') )
+    @priceInput = new NumberInput( @base.qs('[name=price]'), @ref.child('price'))
+
+    @icon = @base.qs('i')
+    @icon::click!
+      @ref.set(null)
+    @icon::touchend!
+      @ref.set(null)
+
+    @ref.on('value', @update.bind(self))
+
+    self &= data
+
+  def update(snapshot)
+    self &= snapshot.val()
