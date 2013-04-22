@@ -27,6 +27,7 @@
     <preference name="stay-in-webview"            value="false" />
     <preference name="exit-on-suspend"            value="false" />
     <preference name="auto-hide-splash-screen"    value="true" />
+    <preference name="android-minSdkVersion"      value="7" />  
 
 
     <icon src="images/icon.png" />
