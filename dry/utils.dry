@@ -7,7 +7,6 @@ def toCurrency
   (@toFixed(0)).replace(regexp,'$1 ')
 proto.toCurrency = toCurrency
 
-
 def numberInput(el)
   el::keypress!
     charCode = event.which ? event.which : event.keyCode

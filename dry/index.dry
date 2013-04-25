@@ -22,6 +22,9 @@ def load
   if (new RegExp("iPhone|iPod|iPad","i")).test(navigator.userAgent)
     body *+ "ios"
 
+  if (new RegExp("Android","i")).test(navigator.userAgent)
+    body *+ "android"
+
   document::touchmove
     event.preventDefault!
 
@@ -35,26 +38,56 @@ def load
   def handleAuth(err,user)
     |#app, #landing| *- 'hidden'
     if err
-      log err
+      alert(err.message)
     else
       if user
+        |[name=email]|.value = ""
+        |[name=password]|.value = ""
         spendy.init(user.id)
       else
         |#landing| *- 'hide'
         |#app| *+ 'hide'
 
+  def login()
+    auth.login('password',{
+      email: |[name=email]|.value,
+      password: |[name=password]|.value
+    })
+
+  def register()
+    name = |[name=email]|.value
+    password = |[name=password]|.value
+    auth.createUser(name,password) (error, user) &
+      if error
+        alert(error.message)
+      else
+        auth.login('password',{email: name, password:password})
+
   auth = new FirebaseAuthClient(baseRef,handleAuth)
 
   spendy = new Spendy(body, baseRef,auth)
 
-  |.persona-button#persona|::click
-    auth.login('persona')
-  |.persona-button#persona|::touchend
-    auth.login('persona')
+  |.persona-button#register|::touchend
+    event.stopPropagation!
+    register!
+
+  |.persona-button#register|::click
+    event.stopPropagation!
+    register!
+
+  |.persona-button#login|::click
+    event.stopPropagation!
+    login!
+
+  |.persona-button#login|::touchend
+    event.stopPropagation!
+    login!
 
   |.persona-button#try|::click
+    event.stopPropagation!
     spendy.init("try")
   |.persona-button#try|::touchend
+    event.stopPropagation!
     spendy.init("try")
 
   |form [name=price]|::keypress!

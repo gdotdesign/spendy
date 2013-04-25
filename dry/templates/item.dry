@@ -1,5 +1,5 @@
 template item
   %li
     %input&name
-    %input&price%number
+    %input&price
     %i.icon-remove
