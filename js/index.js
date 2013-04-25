@@ -711,7 +711,7 @@ __template__ = function(name, els) {
 };
 
 __render__ = function(name, data) {
-  var child, df, el, key, l, temp, value, _i, _len, _ref;
+  var child, df, el, key, temp, value, x, _i, _len, _ref;
 
   el = document.createElement('div');
   temp = __templates__[name];
@@ -722,9 +722,9 @@ __render__ = function(name, data) {
   el.innerHTML = temp;
   df = document.createDocumentFragment();
   if (el.childNodes.length === 1) {
-    l = el.firstChild;
-    el.removeChild(l);
-    return l;
+    x = el.firstElementChild;
+    el.removeChild(x);
+    return x;
   }
   _ref = Array.prototype.slice.call(el.childNodes);
   for (_i = 0, _len = _ref.length; _i < _len; _i++) {
@@ -828,9 +828,11 @@ __render__ = function(name, data) {
     return descriptor;
   };
 })();
-Selector.accessor({"textContent": Selector.warp('textContent')})
+Selector.accessor({"textContent": Selector.warp('textContent'), "value": Selector.warp('value')})
 
-var FireBaseInput, Item, ios, load, proto, toCurrency;
+var Input, Item, NumberInput, Spendy, load, numberInput, proto, toCurrency,
+  __hasProp = {}.hasOwnProperty,
+  __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
 
 proto = typeof Element !== "undefined" && Element !== null ? Element.prototype : void 0;
 
@@ -851,48 +853,42 @@ if (proto != null) {
   proto.toCurrency = toCurrency;
 }
 
-FireBaseInput = (function() {
-  FireBaseInput.set({
+numberInput = function(el) {
+  var _this = this;
+
+  return el.addEventListener('keypress', function(e) {
+    var charCode, event;
+
+    event = e;
+    charCode = (event != null ? event.which : void 0) ? event != null ? event.which : void 0 : event != null ? event.keyCode : void 0;
+    if (charCode > 31 && (charCode < 48 || charCode > 57)) {
+      return event != null ? event.preventDefault() : void 0;
+    }
+  }, true);
+};
+
+Input = (function() {
+  Input.set({
     'value': function(value) {
-      var _ref, _ref1;
+      var _ref;
 
-      if (this.type === "number") {
-        return (_ref = this.input) != null ? _ref.value = parseInt(value) : void 0;
-      } else {
-        return (_ref1 = this.input) != null ? _ref1.value = value : void 0;
-      }
+      return (_ref = this.input) != null ? _ref.value = value : void 0;
     }
   });
 
-  FireBaseInput.get({
+  Input.get({
     'value': function() {
-      var _ref, _ref1;
+      var _ref;
 
-      if (this.type === "number") {
-        return parseInt((_ref = this.input) != null ? _ref.value : void 0);
-      } else {
-        return (_ref1 = this.input) != null ? _ref1.value : void 0;
-      }
+      return (_ref = this.input) != null ? _ref.value : void 0;
     }
   });
 
-  function FireBaseInput(input, ref, type) {
+  function Input(input, ref) {
     var _this = this;
 
     this.input = input;
     this.ref = ref;
-    this.type = type;
-    if (this.type === "number") {
-      this.input.addEventListener('keypress', function(e) {
-        var charCode, event;
-
-        event = e;
-        charCode = (typeof evt !== "undefined" && evt !== null ? evt.which : void 0) ? typeof evt !== "undefined" && evt !== null ? evt.which : void 0 : event != null ? event.keyCode : void 0;
-        if (charCode > 31 && (charCode < 48 || charCode > 57)) {
-          return event != null ? event.preventDefault() : void 0;
-        }
-      }, true);
-    }
     this.input.addEventListener('change', function(e) {
       var event, _ref;
 
@@ -901,9 +897,37 @@ FireBaseInput = (function() {
     }, true);
   }
 
-  return FireBaseInput;
+  return Input;
 
 })();
+
+NumberInput = (function(_super) {
+  __extends(NumberInput, _super);
+
+  NumberInput.set({
+    'value': function(value) {
+      var _ref;
+
+      return (_ref = this.input) != null ? _ref.value = parseInt(value) : void 0;
+    }
+  });
+
+  NumberInput.get({
+    'value': function() {
+      var _ref;
+
+      return parseInt((_ref = this.input) != null ? _ref.value : void 0);
+    }
+  });
+
+  function NumberInput() {
+    NumberInput.__super__.constructor.apply(this, arguments);
+    numberInput(this.input);
+  }
+
+  return NumberInput;
+
+})(Input);
 
 Item = (function() {
   Item.set({
@@ -931,21 +955,21 @@ Item = (function() {
   });
 
   function Item(ref, data) {
-    var icon, _ref, _ref1, _ref2, _ref3, _ref4, _ref5, _ref6,
+    var _ref, _ref1, _ref2, _ref3, _ref4, _ref5, _ref6,
       _this = this;
 
     this.ref = ref;
     this.base = __render__('item');
-    this.nameInput = new FireBaseInput((_ref = this.base) != null ? _ref.qs("[name=name]") : void 0, (_ref1 = this.ref) != null ? _ref1.child("name") : void 0);
-    this.priceInput = new FireBaseInput((_ref2 = this.base) != null ? _ref2.qs("[name=price]") : void 0, (_ref3 = this.ref) != null ? _ref3.child("price") : void 0, "number");
-    icon = (_ref4 = this.base) != null ? _ref4.qs("i") : void 0;
-    icon.addEventListener('click', function(e) {
+    this.nameInput = new Input((_ref = this.base) != null ? _ref.qs("[name=name]") : void 0, (_ref1 = this.ref) != null ? _ref1.child("name") : void 0);
+    this.priceInput = new NumberInput((_ref2 = this.base) != null ? _ref2.qs("[name=price]") : void 0, (_ref3 = this.ref) != null ? _ref3.child("price") : void 0);
+    this.icon = (_ref4 = this.base) != null ? _ref4.qs("i") : void 0;
+    this.icon.addEventListener('click', function(e) {
       var event, _ref5;
 
       event = e;
       return (_ref5 = _this.ref) != null ? _ref5.set(null) : void 0;
     }, true);
-    icon.addEventListener('touchend', function(e) {
+    this.icon.addEventListener('touchend', function(e) {
       var event, _ref5;
 
       event = e;
@@ -965,7 +989,204 @@ Item = (function() {
 
 })();
 
-__template__('item', [__element__("li", {}, "", [__element__("input&name", {}, "", []), __element__("input&price%number", {}, "", []), __element__("i.icon-remove", {}, "", [])])]);
+Spendy = (function() {
+  function Spendy(body, baseRef, auth) {
+    var before, form, _ref, _ref1, _ref2;
+
+    this.baseRef = baseRef;
+    this.auth = auth;
+    this.items = {};
+    this.loading = body != null ? body.qs(".loading") : void 0;
+    this.ul = body != null ? body.qs("ul") : void 0;
+    form = body != null ? body.qs("form") : void 0;
+    this.name = form != null ? form.qs("[name=name]") : void 0;
+    this.price = form != null ? form.qs("[name=price]") : void 0;
+    before = function(event) {
+      var target;
+
+      target = event != null ? event.target : void 0;
+      if ((target != null ? target.tagName : void 0) !== "INPUT") {
+        return event != null ? event.preventDefault() : void 0;
+      }
+    };
+    this.iScroll = new IScroll("scroller", {
+      onBeforeScrollStart: before
+    });
+    this.onValue = (_ref = this.onValue) != null ? _ref.bind(this) : void 0;
+    this.onChildRemoved = (_ref1 = this.onChildRemoved) != null ? _ref1.bind(this) : void 0;
+    this.onChildAdded = (_ref2 = this.onChildAdded) != null ? _ref2.bind(this) : void 0;
+    numberInput(this.price);
+  }
+
+  Spendy.prototype.remove = function(el) {
+    var _ref,
+      _this = this;
+
+    if (el != null) {
+      if ((_ref = el.classList) != null) {
+        _ref.add("remove");
+      }
+    }
+    el.addEventListener('webkitAnimationEnd', function(e) {
+      var event;
+
+      event = e;
+      el.parentNode.removeChild(el);
+      return _this.overAllSpending();
+    }, true);
+    return el.addEventListener('animationend', function(e) {
+      var event;
+
+      event = e;
+      el.parentNode.removeChild(el);
+      return _this.overAllSpending();
+    }, true);
+  };
+
+  Spendy.prototype.add = function() {
+    var obj, ref, _ref, _ref1, _ref2, _ref3, _ref4;
+
+    obj = {
+      name: (_ref = this.name) != null ? _ref.value : void 0,
+      price: parseInt((_ref1 = this.price) != null ? _ref1.value : void 0)
+    };
+    ref = (_ref2 = this.ref) != null ? _ref2.child(typeof Date !== "undefined" && Date !== null ? Date.now() : void 0) : void 0;
+    if (ref != null) {
+      ref.set(obj);
+    }
+    if ((_ref3 = this.price) != null) {
+      _ref3.value = "";
+    }
+    return (_ref4 = this.name) != null ? _ref4.value = "" : void 0;
+  };
+
+  Spendy.prototype.logout = function() {
+    var _ref, _ref1, _ref2, _ref3,
+      _this = this;
+
+    if ((_ref = this.auth) != null) {
+      _ref.logout();
+    }
+    if ((_ref1 = this.ref) != null) {
+      _ref1.off("value", this.onValue);
+    }
+    if ((_ref2 = this.ref) != null) {
+      _ref2.off("child_removed", this.onChildRemoved);
+    }
+    if ((_ref3 = this.ref) != null) {
+      _ref3.off("child_added", this.onChildAdded);
+    }
+    return setTimeout((function() {
+      var items;
+
+      items = _this.items;
+      return __for__(_this.items, function() {
+        var _ref4, _ref5;
+
+        delete items[this.key];
+        return (_ref4 = this.value) != null ? _ref4.base.parentNode.removeChild((_ref5 = this.value) != null ? _ref5.base : void 0) : void 0;
+      });
+    }), 1000);
+  };
+
+  Spendy.prototype.overAllSpending = function() {
+    var children, spending, _ref, _ref1, _ref2, _ref3, _ref4, _ref5;
+
+    spending = 0;
+    __for__(this.items, function() {
+      var _ref;
+
+      return spending += (_ref = this.value) != null ? _ref.price : void 0;
+    });
+    if ((_ref = __selector__('strong')) != null) {
+      _ref.textContent = spending != null ? spending.toCurrency() : void 0;
+    }
+    children = (_ref1 = this.ul) != null ? _ref1.childNodes : void 0;
+    if ((children != null ? children.length : void 0) > 0) {
+      return (_ref2 = this.ul) != null ? (_ref3 = _ref2.classList) != null ? _ref3.remove("empty") : void 0 : void 0;
+    } else {
+      return (_ref4 = this.ul) != null ? (_ref5 = _ref4.classList) != null ? _ref5.add("empty") : void 0 : void 0;
+    }
+  };
+
+  Spendy.prototype.onValue = function() {
+    var _ref, _ref1;
+
+    if ((_ref = this.loading) != null) {
+      if ((_ref1 = _ref.classList) != null) {
+        _ref1.add("hide");
+      }
+    }
+    return this.overAllSpending();
+  };
+
+  Spendy.prototype.onChildAdded = function(snap) {
+    var item, _ref, _ref1;
+
+    item = new Item(snap != null ? snap.ref() : void 0, snap != null ? snap.val() : void 0);
+    this.items[snap != null ? snap.name() : void 0] = item;
+    if ((_ref = this.ul) != null) {
+      _ref.appendChild(item != null ? item.base : void 0);
+    }
+    if ((_ref1 = this.iScroll) != null) {
+      _ref1.refresh();
+    }
+    return this.overAllSpending();
+  };
+
+  Spendy.prototype.onChildRemoved = function(snap) {
+    var item, _ref;
+
+    item = this.items[snap != null ? snap.name() : void 0];
+    this.remove(item != null ? item.base : void 0);
+    delete this.items[snap != null ? snap.name() : void 0];
+    return (_ref = this.iScroll) != null ? _ref.refresh() : void 0;
+  };
+
+  Spendy.prototype.init = function(id) {
+    var _ref, _ref1, _ref2, _ref3, _ref4, _ref5, _ref6, _ref7,
+      _this = this;
+
+    if ((_ref = this.price) != null) {
+      _ref.value = "";
+    }
+    if ((_ref1 = this.name) != null) {
+      _ref1.value = "";
+    }
+    if ((_ref2 = this.loading) != null) {
+      if ((_ref3 = _ref2.classList) != null) {
+        _ref3.remove("hide");
+      }
+    }
+    if ((_ref4 = __selector__('#landing')) != null) {
+      if ((_ref5 = _ref4.classList) != null) {
+        _ref5.add("hide");
+      }
+    }
+    if ((_ref6 = __selector__('#app')) != null) {
+      if ((_ref7 = _ref6.classList) != null) {
+        _ref7.remove("hide");
+      }
+    }
+    return setTimeout((function() {
+      var _ref10, _ref11, _ref8, _ref9;
+
+      _this.ref = (_ref8 = _this.baseRef) != null ? _ref8.child(id) : void 0;
+      if ((_ref9 = _this.ref) != null) {
+        _ref9.on("child_removed", _this.onChildRemoved);
+      }
+      if ((_ref10 = _this.ref) != null) {
+        _ref10.on("child_added", _this.onChildAdded);
+      }
+      return (_ref11 = _this.ref) != null ? _ref11.on("value", _this.onValue) : void 0;
+    }), 1000);
+  };
+
+  return Spendy;
+
+})();
+
+__template__('item', [__element__("li", {}, "", [__element__("input&name", {}, "", []), __element__("input&price", {}, "", []), __element__("i.icon-remove", {}, "", [])])]);
 
 __template__('layout', [
   __element__("article", {}, "", [
@@ -974,7 +1195,11 @@ __template__('layout', [
         __element__("img", {
           "src": "images/icon.png",
           "width": "100px"
-        }, "", []), __element__("h1", {}, "Spendy", []), __element__("a.persona-button#persona", {}, "", [__element__("i.icon-user", {}, "", []), __element__("span", {}, "Sign in with Persona!", [])]), __element__("a.persona-button#try", {}, "Try!", [])
+        }, "", []), __element__("h1", {}, "Spendy", []), __element__("input&email", {
+          "placeholder": "E-Mail"
+        }, "", []), __element__("input%password&password", {
+          "placeholder": "Password"
+        }, "", []), __element__(".row", {}, "", [__element__("a.persona-button#login", {}, "", [__element__("i.icon-user", {}, "", []), __element__("span", {}, "Sign in!", [])]), __element__("a.persona-button#register", {}, "", [__element__("i.icon-user", {}, "", []), __element__("span", {}, "Register!", [])])]), __element__("a.persona-button#try", {}, "Try!", [])
       ])
     ]), __element__("section#app.hidden", {}, "", [
       __element__("header", {}, "", [
@@ -986,7 +1211,7 @@ __template__('layout', [
         ]), __element__("form", {}, "", [
           __element__("input&name", {
             "placeholder": "Name"
-          }, "", []), __element__("input&price%number", {
+          }, "", []), __element__("input&price", {
             "placeholder": "Price"
           }, "", []), __element__("i.icon-signout", {}, "", []), __element__("i.icon-plus", {}, "", [])
         ])
@@ -994,8 +1219,6 @@ __template__('layout', [
     ])
   ])
 ]);
-
-ios = false;
 
 if (typeof window !== "undefined" && window !== null ? window.device : void 0) {
   document.addEventListener('deviceready', function(e) {
@@ -1014,7 +1237,7 @@ if (typeof window !== "undefined" && window !== null ? window.device : void 0) {
 }
 
 load = function() {
-  var IScroll, add, baseRef, before, body, childAdded, childRemoved, connectedRef, form, handleAuth, init, items, loading, myScroll, name, onValue, overAllSpending, price, ref, remove, ul, _ref, _ref1,
+  var auth, baseRef, body, handleAuth, login, register, spendy, _ref, _ref1, _ref2, _ref3,
     _this = this;
 
   body = typeof document !== "undefined" && document !== null ? document.body : void 0;
@@ -1022,66 +1245,26 @@ load = function() {
     body.appendChild(__render__('layout'));
   }
   if ((_ref = new RegExp("iPhone|iPod|iPad", "i")) != null ? _ref.test(typeof navigator !== "undefined" && navigator !== null ? navigator.userAgent : void 0) : void 0) {
-    ios = true;
     if (body != null) {
       if ((_ref1 = body.classList) != null) {
         _ref1.add("ios");
       }
     }
   }
-  form = body != null ? body.qs("form") : void 0;
-  IScroll = iScroll;
-  before = function(event) {
-    var target;
-
-    target = event != null ? event.target : void 0;
-    if ((target != null ? target.tagName : void 0) !== "INPUT") {
-      return event != null ? event.preventDefault() : void 0;
-    }
-  };
-  myScroll = new IScroll("scroller", {
-    onBeforeScrollStart: before
-  });
-  if (typeof document !== "undefined" && document !== null) {
-    document.addEventListener("touchmove", function(event) {
-      return event != null ? event.preventDefault() : void 0;
-    });
-  }
-  connectedRef = new Firebase("https://intest.firebaseio.com/.info/connected");
-  if (connectedRef != null) {
-    connectedRef.on("value", function(snap) {
-      if ((snap != null ? snap.val() : void 0) === true) {
-        return console.log("connected");
-      } else {
-        return console.log("not connected");
+  if ((_ref2 = new RegExp("Android", "i")) != null ? _ref2.test(typeof navigator !== "undefined" && navigator !== null ? navigator.userAgent : void 0) : void 0) {
+    if (body != null) {
+      if ((_ref3 = body.classList) != null) {
+        _ref3.add("android");
       }
-    });
+    }
   }
-  __selector__('.persona-button#persona').addEventListener('touchend', function(e) {
+  document.addEventListener('touchmove', function(e) {
     var event;
 
     event = e;
-    return typeof auth !== "undefined" && auth !== null ? auth.login("persona") : void 0;
+    return event != null ? event.preventDefault() : void 0;
   }, true);
-  __selector__('.persona-button#persona').addEventListener('click', function(e) {
-    var event;
-
-    event = e;
-    return typeof auth !== "undefined" && auth !== null ? auth.login("persona") : void 0;
-  }, true);
-  __selector__('.persona-button#try').addEventListener('touchend', function(e) {
-    var event;
-
-    event = e;
-    return init("try");
-  }, true);
-  __selector__('.persona-button#try').addEventListener('click', function(e) {
-    var event;
-
-    event = e;
-    return init("try");
-  }, true);
-  __selector__('body').addEventListener('touchend', function(e) {
+  document.addEventListener('touchend', function(e) {
     var event, focused;
 
     event = e;
@@ -1090,248 +1273,146 @@ load = function() {
       return focused != null ? focused.blur() : void 0;
     }
   }, true);
-  __selector__('form [name=price]').addEventListener('keypress', function(e) {
-    var charCode, event;
+  baseRef = new Firebase("https://spendy.firebaseio.com/");
+  handleAuth = function(err, user) {
+    var _ref10, _ref11, _ref4, _ref5, _ref6, _ref7, _ref8, _ref9;
 
-    event = e;
-    charCode = (typeof evt !== "undefined" && evt !== null ? evt.which : void 0) ? typeof evt !== "undefined" && evt !== null ? evt.which : void 0 : event != null ? event.keyCode : void 0;
-    if (charCode > 31 && (charCode < 48 || charCode > 57)) {
-      if (event != null) {
-        event.preventDefault();
+    if ((_ref4 = __selector__('#app, #landing')) != null) {
+      if ((_ref5 = _ref4.classList) != null) {
+        _ref5.remove("hidden");
       }
     }
-    if (charCode === 13) {
-      return add();
+    if (err) {
+      return alert(err != null ? err.message : void 0);
+    } else {
+      if (user) {
+        if ((_ref6 = __selector__('[name=email]')) != null) {
+          _ref6.value = "";
+        }
+        if ((_ref7 = __selector__('[name=password]')) != null) {
+          _ref7.value = "";
+        }
+        return typeof spendy !== "undefined" && spendy !== null ? spendy.init(user != null ? user.id : void 0) : void 0;
+      } else {
+        if ((_ref8 = __selector__('#landing')) != null) {
+          if ((_ref9 = _ref8.classList) != null) {
+            _ref9.remove("hide");
+          }
+        }
+        return (_ref10 = __selector__('#app')) != null ? (_ref11 = _ref10.classList) != null ? _ref11.add("hide") : void 0 : void 0;
+      }
+    }
+  };
+  login = function() {
+    var _ref4, _ref5;
+
+    return typeof auth !== "undefined" && auth !== null ? auth.login("password", {
+      email: (_ref4 = __selector__('[name=email]')) != null ? _ref4.value : void 0,
+      password: (_ref5 = __selector__('[name=password]')) != null ? _ref5.value : void 0
+    }) : void 0;
+  };
+  register = function() {
+    var name, password, _ref4, _ref5;
+
+    name = (_ref4 = __selector__('[name=email]')) != null ? _ref4.value : void 0;
+    password = (_ref5 = __selector__('[name=password]')) != null ? _ref5.value : void 0;
+    return typeof auth !== "undefined" && auth !== null ? auth.createUser(name, password, function(error, user) {
+      if (error) {
+        return alert(error != null ? error.message : void 0);
+      } else {
+        return typeof auth !== "undefined" && auth !== null ? auth.login("password", {
+          email: name,
+          password: password
+        }) : void 0;
+      }
+    }) : void 0;
+  };
+  auth = new FirebaseAuthClient(baseRef, handleAuth);
+  spendy = new Spendy(body, baseRef, auth);
+  __selector__('.persona-button#register').addEventListener('touchend', function(e) {
+    var event;
+
+    event = e;
+    if (event != null) {
+      event.stopPropagation();
+    }
+    return register();
+  }, true);
+  __selector__('.persona-button#register').addEventListener('click', function(e) {
+    var event;
+
+    event = e;
+    if (event != null) {
+      event.stopPropagation();
+    }
+    return register();
+  }, true);
+  __selector__('.persona-button#login').addEventListener('click', function(e) {
+    var event;
+
+    event = e;
+    if (event != null) {
+      event.stopPropagation();
+    }
+    return login();
+  }, true);
+  __selector__('.persona-button#login').addEventListener('touchend', function(e) {
+    var event;
+
+    event = e;
+    if (event != null) {
+      event.stopPropagation();
+    }
+    return login();
+  }, true);
+  __selector__('.persona-button#try').addEventListener('click', function(e) {
+    var event;
+
+    event = e;
+    if (event != null) {
+      event.stopPropagation();
+    }
+    return spendy != null ? spendy.init("try") : void 0;
+  }, true);
+  __selector__('.persona-button#try').addEventListener('touchend', function(e) {
+    var event;
+
+    event = e;
+    if (event != null) {
+      event.stopPropagation();
+    }
+    return spendy != null ? spendy.init("try") : void 0;
+  }, true);
+  __selector__('form [name=price]').addEventListener('keypress', function(e) {
+    var event;
+
+    event = e;
+    if ((event != null ? event.keyCode : void 0) === 13) {
+      return spendy != null ? spendy.add() : void 0;
     }
   }, true);
   __selector__('i.icon-plus').addEventListener('click', function(e) {
     var event;
 
     event = e;
-    return add();
+    return spendy != null ? spendy.add() : void 0;
   }, true);
-  __selector__('i.icon-plus').addEventListener('touchstart', function(e) {
+  __selector__('i.icon-plus').addEventListener('touchend', function(e) {
     var event;
 
     event = e;
-    return add();
+    return spendy != null ? spendy.add() : void 0;
   }, true);
   __selector__('i.icon-signout').addEventListener('click', function(e) {
-    var event,
-      _this = this;
+    var event;
 
     event = e;
-    if (typeof auth !== "undefined" && auth !== null) {
-      auth.logout();
-    }
-    if (typeof ref !== "undefined" && ref !== null) {
-      ref.off("value", onValue);
-    }
-    if (typeof ref !== "undefined" && ref !== null) {
-      ref.off("child_removed", childRemoved);
-    }
-    if (typeof ref !== "undefined" && ref !== null) {
-      ref.off("child_added", childAdded);
-    }
-    return setTimeout((function() {
-      return __for__(items, function() {
-        var _ref2, _ref3, _ref4, _ref5;
-
-        delete items[typeof this !== "undefined" && this !== null ? this.key : void 0];
-        return (_ref2 = (typeof this !== "undefined" && this !== null ? this.value : void 0)) != null ? (_ref3 = _ref2.base) != null ? (_ref4 = _ref3.parentNode) != null ? _ref4.removeChild((_ref5 = (typeof this !== "undefined" && this !== null ? this.value : void 0)) != null ? _ref5.base : void 0) : void 0 : void 0 : void 0;
-      });
-    }), 1000);
+    return spendy != null ? spendy.logout() : void 0;
   }, true);
-  __selector__('i.icon-signout').addEventListener('touchstart', function(e) {
-    var event,
-      _this = this;
+  return __selector__('i.icon-signout').addEventListener('touchend', function(e) {
+    var event;
 
     event = e;
-    if (typeof auth !== "undefined" && auth !== null) {
-      auth.logout();
-    }
-    if (typeof ref !== "undefined" && ref !== null) {
-      ref.off("value", onValue);
-    }
-    if (typeof ref !== "undefined" && ref !== null) {
-      ref.off("child_removed", childRemoved);
-    }
-    if (typeof ref !== "undefined" && ref !== null) {
-      ref.off("child_added", childAdded);
-    }
-    return setTimeout((function() {
-      return __for__(items, function() {
-        var _ref2, _ref3, _ref4, _ref5;
-
-        delete items[typeof this !== "undefined" && this !== null ? this.key : void 0];
-        return (_ref2 = (typeof this !== "undefined" && this !== null ? this.value : void 0)) != null ? (_ref3 = _ref2.base) != null ? (_ref4 = _ref3.parentNode) != null ? _ref4.removeChild((_ref5 = (typeof this !== "undefined" && this !== null ? this.value : void 0)) != null ? _ref5.base : void 0) : void 0 : void 0 : void 0;
-      });
-    }), 1000);
+    return spendy != null ? spendy.logout() : void 0;
   }, true);
-  baseRef = new Firebase("https://spendy.firebaseio.com/");
-  handleAuth = function(err, user) {
-    var _ref2, _ref3, _ref4, _ref5, _ref6, _ref7;
-
-    if ((_ref2 = __selector__('#app, #landing')) != null) {
-      if ((_ref3 = _ref2.classList) != null) {
-        _ref3.remove("hidden");
-      }
-    }
-    if (err) {
-      return console.log(err);
-    } else {
-      if (user) {
-        return init(user != null ? user.id : void 0);
-      } else {
-        if ((_ref4 = __selector__('#landing')) != null) {
-          if ((_ref5 = _ref4.classList) != null) {
-            _ref5.remove("hide");
-          }
-        }
-        return (_ref6 = __selector__('#app')) != null ? (_ref7 = _ref6.classList) != null ? _ref7.add("hide") : void 0 : void 0;
-      }
-    }
-  };
-  if (typeof window !== "undefined" && window !== null) {
-    window.auth = new FirebaseAuthClient(baseRef, handleAuth);
-  }
-  remove = function(el) {
-    var _ref2;
-
-    if (el != null) {
-      if ((_ref2 = el.classList) != null) {
-        _ref2.add("remove");
-      }
-    }
-    el.addEventListener('webkitAnimationEnd', function(e) {
-      var event, _ref3;
-
-      event = e;
-      if (el != null) {
-        if ((_ref3 = el.parentNode) != null) {
-          _ref3.removeChild(el);
-        }
-      }
-      return overAllSpending();
-    }, true);
-    return el.addEventListener('animationend', function(e) {
-      var event, _ref3;
-
-      event = e;
-      if (el != null) {
-        if ((_ref3 = el.parentNode) != null) {
-          _ref3.removeChild(el);
-        }
-      }
-      return overAllSpending();
-    }, true);
-  };
-  add = function() {
-    var _ref2;
-
-    if ((_ref2 = typeof ref !== "undefined" && ref !== null ? ref.child(typeof Date !== "undefined" && Date !== null ? Date.now() : void 0) : void 0) != null) {
-      _ref2.set({
-        name: typeof name !== "undefined" && name !== null ? name.value : void 0,
-        price: parseInt(typeof price !== "undefined" && price !== null ? price.value : void 0)
-      });
-    }
-    if (typeof price !== "undefined" && price !== null) {
-      price.value = "";
-    }
-    return typeof name !== "undefined" && name !== null ? name.value = "" : void 0;
-  };
-  items = {};
-  ref = null;
-  loading = body != null ? body.qs(".loading") : void 0;
-  ul = body != null ? body.qs("ul") : void 0;
-  name = form != null ? form.qs("[name=name]") : void 0;
-  price = form != null ? form.qs("[name=price]") : void 0;
-  overAllSpending = function() {
-    var children, spending, _ref2, _ref3, _ref4;
-
-    spending = 0;
-    __for__(items, function() {
-      var value;
-
-      value = typeof this !== "undefined" && this !== null ? this.value : void 0;
-      return spending += value != null ? value.price : void 0;
-    });
-    if ((_ref2 = __selector__('strong')) != null) {
-      _ref2.textContent = spending != null ? spending.toCurrency() : void 0;
-    }
-    children = ul != null ? ul.childNodes : void 0;
-    if ((children != null ? children.length : void 0) > 0) {
-      return ul != null ? (_ref3 = ul.classList) != null ? _ref3.remove("empty") : void 0 : void 0;
-    } else {
-      return ul != null ? (_ref4 = ul.classList) != null ? _ref4.add("empty") : void 0 : void 0;
-    }
-  };
-  onValue = function() {
-    var _ref2;
-
-    if (loading != null) {
-      if ((_ref2 = loading.classList) != null) {
-        _ref2.add("hide");
-      }
-    }
-    return overAllSpending();
-  };
-  childAdded = function(snap) {
-    var item;
-
-    console.log("Child added");
-    item = new Item(snap != null ? snap.ref() : void 0, snap != null ? snap.val() : void 0);
-    items[snap != null ? snap.name() : void 0] = item;
-    if (ul != null) {
-      ul.appendChild(item != null ? item.base : void 0);
-    }
-    if (myScroll != null) {
-      myScroll.refresh();
-    }
-    return overAllSpending();
-  };
-  childRemoved = function(snap) {
-    var item;
-
-    item = items[snap != null ? snap.name() : void 0];
-    remove(item != null ? item.base : void 0);
-    delete items[snap != null ? snap.name() : void 0];
-    return myScroll != null ? myScroll.refresh() : void 0;
-  };
-  return init = function(id) {
-    var _ref2, _ref3, _ref4, _ref5, _ref6,
-      _this = this;
-
-    if (price != null) {
-      price.value = "";
-    }
-    if (name != null) {
-      name.value = "";
-    }
-    if (loading != null) {
-      if ((_ref2 = loading.classList) != null) {
-        _ref2.remove("hide");
-      }
-    }
-    if ((_ref3 = __selector__('#landing')) != null) {
-      if ((_ref4 = _ref3.classList) != null) {
-        _ref4.add("hide");
-      }
-    }
-    if ((_ref5 = __selector__('#app')) != null) {
-      if ((_ref6 = _ref5.classList) != null) {
-        _ref6.remove("hide");
-      }
-    }
-    return setTimeout((function() {
-      ref = baseRef != null ? baseRef.child(id) : void 0;
-      if (ref != null) {
-        ref.on("child_removed", childRemoved);
-      }
-      if (ref != null) {
-        ref.on("child_added", childAdded);
-      }
-      return ref != null ? ref.on("value", onValue) : void 0;
-    }), 1000);
-  };
 };
